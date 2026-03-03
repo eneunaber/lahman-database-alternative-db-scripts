@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: pg_test
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lahman
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      # Optional: ensures a consistent locale/collation baseline
+      # LANG: en_US.utf8
+    ports:
+      - "5432:5432"
+    command: ["postgres", "-c", "listen_addresses=*"]
+    volumes:
+      # Persistent database storage
+      - pgdata:/var/lib/postgresql/data
+      # Optional: auto-run scripts on first init (see notes below)
+      # - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d lahman"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer_test
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8010:8080"
+
+volumes:
+  pgdata:
