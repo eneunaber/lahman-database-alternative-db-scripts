@@ -62,5 +62,5 @@ SELECT COUNT(*) FROM public.batting;
 
 ## Attribution and License
 
-The underlying Lahman dataset is provided by SABR/Sean Lahman. Refer to `data/readme2025.txt` for the official copyright,
+The underlying Lahman dataset is provided by SABR/Sean Lahman. Refer to them for the official copyright,
 license, and contact information.
