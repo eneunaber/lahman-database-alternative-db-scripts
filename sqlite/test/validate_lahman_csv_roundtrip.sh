@@ -31,6 +31,7 @@ for src in "$DATA_DIR"/*.csv; do
   stem="${base%.csv}"
   table="$stem"
   db_tsv="$WORK_DIR/${stem}_db.tsv"
+  type_map="$WORK_DIR/${stem}_types.tsv"
 
   table_exists="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='$table';")"
   if [[ "$table_exists" -eq 0 ]]; then
@@ -40,15 +41,17 @@ for src in "$DATA_DIR"/*.csv; do
   fi
 
   select_list=""
-  while IFS= read -r col; do
+  : > "$type_map"
+  while IFS='|' read -r _cid col col_type _notnull _default _pk; do
     [[ -z "$col" ]] && continue
+    printf '%s\t%s\n' "$col" "$col_type" >> "$type_map"
     expr="IFNULL(CAST(\"$col\" AS TEXT), '') AS \"$col\""
     if [[ -z "$select_list" ]]; then
       select_list="$expr"
     else
       select_list="$select_list, $expr"
     fi
-  done < <(sqlite3 "$DB_PATH" "PRAGMA table_info(\"$table\");" | awk -F'|' '{print $2}')
+  done < <(sqlite3 "$DB_PATH" "PRAGMA table_info(\"$table\");")
 
   if [[ -z "$select_list" ]]; then
     echo "$base: no columns found for table '$table'"
@@ -61,21 +64,55 @@ for src in "$DATA_DIR"/*.csv; do
   src_norm="$WORK_DIR/${stem}_src.norm"
   exp_norm="$WORK_DIR/${stem}_exp.norm"
 
-  python3 - "$src" "$src_norm" <<'PY'
+  python3 - "$src" "$db_tsv" "$src_norm" "$exp_norm" "$type_map" <<'PY'
 import csv
+import decimal
 import sys
 
-src, out = sys.argv[1], sys.argv[2]
-with open(src, newline='', encoding='utf-8') as f, open(out, 'w', encoding='utf-8', newline='') as o:
+src, db_tsv, src_out, exp_out, type_map = sys.argv[1:6]
+
+
+def canon(value: str, declared_type: str) -> str:
+    if value == "":
+        return ""
+    t = (declared_type or "").upper()
+    if "REAL" in t or "FLOA" in t or "DOUB" in t:
+        d = decimal.Decimal(value)
+        if d == d.to_integral_value():
+            return f"{d.quantize(decimal.Decimal('0.0'))}"
+        return format(d.normalize(), "f")
+    if "INT" in t:
+        return str(int(decimal.Decimal(value)))
+    return value
+
+
+types = []
+with open(type_map, encoding="utf-8", newline="") as f:
+    for line in f:
+        line = line.rstrip("\n")
+        if not line:
+            continue
+        col, declared = line.split("\t", 1)
+        types.append((col, declared))
+
+with open(src, newline='', encoding='utf-8-sig') as f, open(src_out, 'w', encoding='utf-8', newline='') as o:
     r = csv.reader(f)
-    next(r, None)
+    header = next(r, None)
     for row in r:
+        row = [canon(v, types[i][1] if i < len(types) else "") for i, v in enumerate(row)]
+        o.write('\t'.join(row))
+        o.write('\n')
+
+with open(db_tsv, newline='', encoding='utf-8') as f, open(exp_out, 'w', encoding='utf-8', newline='') as o:
+    for raw in f:
+        row = raw.rstrip('\n').rstrip('\r').split('\t')
+        row = [canon(v, types[i][1] if i < len(types) else "") for i, v in enumerate(row)]
         o.write('\t'.join(row))
         o.write('\n')
 PY
 
   sort "$src_norm" -o "$src_norm"
-  sed 's/\r$//' "$db_tsv" | sort > "$exp_norm"
+  sort "$exp_norm" -o "$exp_norm"
 
   if diff -q "$src_norm" "$exp_norm" >/dev/null; then
     echo "$base: same"

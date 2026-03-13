@@ -1,9 +1,6 @@
--- SQLite setup/reset script for Lahman imports.
--- Run from repository root:
---   sqlite3 lahman.sqlite < sqlite/create_lahman_sqlite.sql
-
-PRAGMA foreign_keys = OFF;
-
+-- Lahman database schema (converted from SQL Server to SQLite)
+PRAGMA foreign_keys = ON;
+BEGIN;
 DROP TABLE IF EXISTS "AllstarFull";
 DROP TABLE IF EXISTS "Appearances";
 DROP TABLE IF EXISTS "AwardsManagers";
@@ -31,3 +28,485 @@ DROP TABLE IF EXISTS "SeriesPost";
 DROP TABLE IF EXISTS "Teams";
 DROP TABLE IF EXISTS "TeamsFranchises";
 DROP TABLE IF EXISTS "TeamsHalf";
+
+CREATE TABLE "PitchingPost" (
+
+	"playerID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"round" TEXT NOT NULL,
+	"teamID" TEXT NULL,
+	"lgID" TEXT NULL,
+	"W" INTEGER NULL,
+	"L" INTEGER NULL,
+	"G" INTEGER NULL,
+	"GS" INTEGER NULL,
+	"CG" INTEGER NULL,
+	"SHO" INTEGER NULL,
+	"SV" INTEGER NULL,
+	"IPouts" INTEGER NULL,
+	"H" INTEGER NULL,
+	"ER" INTEGER NULL,
+	"HR" INTEGER NULL,
+	"BB" INTEGER NULL,
+	"SO" INTEGER NULL,
+	"BAOpp" REAL NULL,
+	"ERA" REAL NULL,
+	"IBB" INTEGER NULL,
+	"WP" INTEGER NULL,
+	"HBP" INTEGER NULL,
+	"BK" INTEGER NULL,
+	"BFP" INTEGER NULL,
+	"GF" INTEGER NULL,
+	"R" INTEGER NULL,
+	"SH" INTEGER NULL,
+	"SF" INTEGER NULL,
+	"GIDP" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "FieldingPost" (
+
+	"playerID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"teamID" TEXT NULL,
+	"lgID" TEXT NULL,
+	"round" TEXT NOT NULL,
+	"POS" TEXT NOT NULL,
+	"G" INTEGER NULL,
+	"GS" INTEGER NULL,
+	"InnOuts" INTEGER NULL,
+	"PO" INTEGER NULL,
+	"A" INTEGER NULL,
+	"E" INTEGER NULL,
+	"DP" INTEGER NULL,
+	"TP" INTEGER NULL,
+	"PB" INTEGER NULL,
+	"SB" INTEGER NULL,
+	"CS" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "SeriesPost" (
+
+	"yearID" INTEGER NOT NULL,
+	"round" TEXT NOT NULL,
+	"teamIDwinner" TEXT NULL,
+	"lgIDwinner" TEXT NULL,
+	"teamIDloser" TEXT NULL,
+	"lgIDloser" TEXT NULL,
+	"wins" INTEGER NULL,
+	"losses" INTEGER NULL,
+	"ties" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "ManagersHalf" (
+
+	"playerID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"teamID" TEXT NOT NULL,
+	"lgID" TEXT NULL,
+	"inseason" INTEGER NULL,
+	"half" INTEGER NOT NULL,
+	"G" INTEGER NULL,
+	"W" INTEGER NULL,
+	"L" INTEGER NULL,
+	"rank" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "TeamsHalf" (
+
+	"yearID" INTEGER NOT NULL,
+	"lgID" TEXT NOT NULL,
+	"teamID" TEXT NOT NULL,
+	"Half" INTEGER NOT NULL,
+	"divID" TEXT NULL,
+	"DivWin" TEXT NULL,
+	"Rank" INTEGER NULL,
+	"G" INTEGER NULL,
+	"W" INTEGER NULL,
+	"L" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "AwardsManagers" (
+
+	"playerID" TEXT NOT NULL,
+	"awardID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"lgID" TEXT NOT NULL,
+	"tie" TEXT NULL,
+	"notes" TEXT NULL
+) STRICT;
+
+CREATE TABLE "AwardsPlayers" (
+
+	"playerID" TEXT NULL,
+	"awardID" TEXT NULL,
+	"yearID" INTEGER NULL,
+	"lgID" TEXT NULL,
+	"tie" TEXT NULL,
+	"notes" TEXT NULL
+) STRICT;
+
+CREATE TABLE "AwardsShareManagers" (
+
+	"awardID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"lgID" TEXT NOT NULL,
+	"playerID" TEXT NOT NULL,
+	"pointsWon" INTEGER NULL,
+	"pointsMax" INTEGER NULL,
+	"votesFirst" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "AwardsSharePlayers" (
+
+	"awardID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"lgID" TEXT NOT NULL,
+	"playerID" TEXT NOT NULL,
+	"pointsWon" INTEGER NULL,
+	"pointsMax" INTEGER NULL,
+	"votesFirst" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "HallOfFame" (
+
+	"playerID" TEXT NOT NULL,
+	"yearid" INTEGER NOT NULL,
+	"votedBy" TEXT NOT NULL,
+	"ballots" INTEGER NULL,
+	"needed" INTEGER NULL,
+	"votes" INTEGER NULL,
+	"inducted" TEXT NULL,
+	"category" TEXT NULL,
+	"needed_note" TEXT NULL
+) STRICT;
+
+CREATE TABLE "CollegePlaying" (
+
+	"playerID" TEXT NOT NULL,
+	"schoolID" TEXT NULL,
+	"yearID" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "Salaries" (
+
+	"yearID" INTEGER NOT NULL,
+	"teamID" TEXT NOT NULL,
+	"lgID" TEXT NOT NULL,
+	"playerID" TEXT NOT NULL,
+	"salary" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "Schools" (
+
+	"schoolID" TEXT NOT NULL,
+	"name_full" TEXT NULL,
+	"city" TEXT NULL,
+	"state" TEXT NULL,
+	"country" TEXT NULL
+) STRICT;
+
+CREATE TABLE "HomeGames" (
+
+	"yearkey" INTEGER NULL,
+	"leaguekey" TEXT NULL,
+	"teamkey" TEXT NULL,
+	"parkkey" TEXT NULL,
+	"spanfirst" TEXT NULL,
+	"spanlast" TEXT NULL,
+	"games" INTEGER NULL,
+	"openings" INTEGER NULL,
+	"attendance" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "People" (
+
+	"ID" INTEGER NOT NULL,
+	"playerID" TEXT NOT NULL,
+	"birthYear" INTEGER NULL,
+	"birthMonth" INTEGER NULL,
+	"birthDay" INTEGER NULL,
+	"birthCity" TEXT NULL,
+	"birthCountry" TEXT NULL,
+	"birthState" TEXT NULL,
+	"deathYear" INTEGER NULL,
+	"deathMonth" INTEGER NULL,
+	"deathDay" INTEGER NULL,
+	"deathCountry" TEXT NULL,
+	"deathState" TEXT NULL,
+	"deathCity" TEXT NULL,
+	"nameFirst" TEXT NULL,
+	"nameLast" TEXT NULL,
+	"nameGiven" TEXT NULL,
+	"weight" TEXT NULL,
+	"height" TEXT NULL,
+	"bats" TEXT NULL,
+	"throws" TEXT NULL,
+	"debut" TEXT NULL,
+	"bbrefID" TEXT NULL,
+	"finalGame" TEXT NULL,
+	"retroID" TEXT NULL
+) STRICT;
+
+CREATE TABLE "Teams" (
+
+	"yearID" INTEGER NOT NULL,
+	"lgID" TEXT NOT NULL,
+	"teamID" TEXT NOT NULL,
+	"franchID" TEXT NULL,
+	"divID" TEXT NULL,
+	"Rank" INTEGER NULL,
+	"G" INTEGER NULL,
+	"Ghome" INTEGER NULL,
+	"W" INTEGER NULL,
+	"L" INTEGER NULL,
+	"DivWin" TEXT NULL,
+	"WCWin" TEXT NULL,
+	"LgWin" TEXT NULL,
+	"WSWin" TEXT NULL,
+	"R" INTEGER NULL,
+	"AB" INTEGER NULL,
+	"H" INTEGER NULL,
+	"2B" INTEGER NULL,
+	"3B" INTEGER NULL,
+	"HR" INTEGER NULL,
+	"BB" INTEGER NULL,
+	"SO" INTEGER NULL,
+	"SB" INTEGER NULL,
+	"CS" INTEGER NULL,
+	"HBP" INTEGER NULL,
+	"SF" INTEGER NULL,
+	"RA" INTEGER NULL,
+	"ER" INTEGER NULL,
+	"ERA" REAL NULL,
+	"CG" INTEGER NULL,
+	"SHO" INTEGER NULL,
+	"SV" INTEGER NULL,
+	"IPouts" INTEGER NULL,
+	"HA" INTEGER NULL,
+	"HRA" INTEGER NULL,
+	"BBA" INTEGER NULL,
+	"SOA" INTEGER NULL,
+	"E" INTEGER NULL,
+	"DP" INTEGER NULL,
+	"FP" REAL NULL,
+	"name" TEXT NULL,
+	"park" TEXT NULL,
+	"attendance" INTEGER NULL,
+	"BPF" INTEGER NULL,
+	"PPF" INTEGER NULL,
+	"teamIDBR" TEXT NULL,
+	"teamIDlahman45" TEXT NULL,
+	"teamIDretro" TEXT NULL
+) STRICT;
+
+CREATE TABLE "Batting" (
+
+	"playerID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"stint" INTEGER NOT NULL,
+	"teamID" TEXT NULL,
+	"lgID" TEXT NULL,
+	"G" INTEGER NULL,
+	"AB" INTEGER NULL,
+	"R" INTEGER NULL,
+	"H" INTEGER NULL,
+	"2B" INTEGER NULL,
+	"3B" INTEGER NULL,
+	"HR" INTEGER NULL,
+	"RBI" INTEGER NULL,
+	"SB" INTEGER NULL,
+	"CS" INTEGER NULL,
+	"BB" INTEGER NULL,
+	"SO" INTEGER NULL,
+	"IBB" INTEGER NULL,
+	"HBP" INTEGER NULL,
+	"SH" INTEGER NULL,
+	"SF" INTEGER NULL,
+	"GIDP" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "Pitching" (
+
+	"playerID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"stint" INTEGER NOT NULL,
+	"teamID" TEXT NULL,
+	"lgID" TEXT NULL,
+	"W" INTEGER NULL,
+	"L" INTEGER NULL,
+	"G" INTEGER NULL,
+	"GS" INTEGER NULL,
+	"CG" INTEGER NULL,
+	"SHO" INTEGER NULL,
+	"SV" INTEGER NULL,
+	"IPouts" INTEGER NULL,
+	"H" INTEGER NULL,
+	"ER" INTEGER NULL,
+	"HR" INTEGER NULL,
+	"BB" INTEGER NULL,
+	"SO" INTEGER NULL,
+	"BAOpp" REAL NULL,
+	"ERA" REAL NULL,
+	"IBB" INTEGER NULL,
+	"WP" INTEGER NULL,
+	"HBP" INTEGER NULL,
+	"BK" INTEGER NULL,
+	"BFP" INTEGER NULL,
+	"GF" INTEGER NULL,
+	"R" INTEGER NULL,
+	"SH" INTEGER NULL,
+	"SF" INTEGER NULL,
+	"GIDP" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "Fielding" (
+
+	"playerID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"stint" INTEGER NOT NULL,
+	"teamID" TEXT NULL,
+	"lgID" TEXT NULL,
+	"POS" TEXT NOT NULL,
+	"G" INTEGER NULL,
+	"GS" INTEGER NULL,
+	"InnOuts" INTEGER NULL,
+	"PO" INTEGER NULL,
+	"A" INTEGER NULL,
+	"E" INTEGER NULL,
+	"DP" INTEGER NULL,
+	"PB" INTEGER NULL,
+	"WP" INTEGER NULL,
+	"SB" INTEGER NULL,
+	"CS" INTEGER NULL,
+	"ZR" REAL NULL
+) STRICT;
+
+CREATE TABLE "FieldingOF" (
+
+	"playerID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"stint" INTEGER NOT NULL,
+	"Glf" INTEGER NULL,
+	"Gcf" INTEGER NULL,
+	"Grf" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "FieldingOFsplit" (
+
+	"playerID" TEXT NOT NULL,
+	"yearID" INTEGER NOT NULL,
+	"stint" INTEGER NOT NULL,
+	"teamID" TEXT NULL,
+	"lgID" TEXT NULL,
+	"POS" TEXT NOT NULL,
+	"G" INTEGER NULL,
+	"GS" INTEGER NULL,
+	"InnOuts" INTEGER NULL,
+	"PO" INTEGER NULL,
+	"A" INTEGER NULL,
+	"E" INTEGER NULL,
+	"DP" INTEGER NULL,
+	"PB" INTEGER NULL,
+	"WP" INTEGER NULL,
+	"SB" INTEGER NULL,
+	"CS" INTEGER NULL,
+	"ZR" REAL NULL
+) STRICT;
+
+CREATE TABLE "Appearances" (
+
+	"yearID" INTEGER NOT NULL,
+	"teamID" TEXT NOT NULL,
+	"lgID" TEXT NULL,
+	"playerID" TEXT NOT NULL,
+	"G_all" INTEGER NULL,
+	"GS" INTEGER NULL,
+	"G_batting" INTEGER NULL,
+	"G_defense" INTEGER NULL,
+	"G_p" INTEGER NULL,
+	"G_c" INTEGER NULL,
+	"G_1b" INTEGER NULL,
+	"G_2b" INTEGER NULL,
+	"G_3b" INTEGER NULL,
+	"G_ss" INTEGER NULL,
+	"G_lf" INTEGER NULL,
+	"G_cf" INTEGER NULL,
+	"G_rf" INTEGER NULL,
+	"G_of" INTEGER NULL,
+	"G_dh" INTEGER NULL,
+	"G_ph" INTEGER NULL,
+	"G_pr" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "Managers" (
+
+	"playerID" TEXT NULL,
+	"yearID" INTEGER NOT NULL,
+	"teamID" TEXT NOT NULL,
+	"lgID" TEXT NULL,
+	"inseason" INTEGER NOT NULL,
+	"G" INTEGER NULL,
+	"W" INTEGER NULL,
+	"L" INTEGER NULL,
+	"rank" INTEGER NULL,
+	"plyrMgr" TEXT NULL
+) STRICT;
+
+CREATE TABLE "AllstarFull" (
+
+	"playerID" TEXT NULL,
+	"yearID" INTEGER NULL,
+	"gameNum" INTEGER NULL,
+	"gameID" TEXT NULL,
+	"teamID" TEXT NULL,
+	"lgID" TEXT NULL,
+	"GP" INTEGER NULL,
+	"startingPos" TEXT NULL
+) STRICT;
+
+CREATE TABLE "BattingPost" (
+
+	"yearID" INTEGER NOT NULL,
+	"round" TEXT NOT NULL,
+	"playerID" TEXT NOT NULL,
+	"teamID" TEXT NULL,
+	"lgID" TEXT NULL,
+	"G" INTEGER NULL,
+	"AB" INTEGER NULL,
+	"R" INTEGER NULL,
+	"H" INTEGER NULL,
+	"2B" INTEGER NULL,
+	"3B" INTEGER NULL,
+	"HR" INTEGER NULL,
+	"RBI" INTEGER NULL,
+	"SB" INTEGER NULL,
+	"CS" INTEGER NULL,
+	"BB" INTEGER NULL,
+	"SO" INTEGER NULL,
+	"IBB" INTEGER NULL,
+	"HBP" INTEGER NULL,
+	"SH" INTEGER NULL,
+	"SF" INTEGER NULL,
+	"GIDP" INTEGER NULL
+) STRICT;
+
+CREATE TABLE "Parks" (
+
+	"ID" INTEGER NOT NULL,
+	"parkalias" TEXT NULL,
+	"parkkey" TEXT NULL,
+	"parkname" TEXT NULL,
+	"city" TEXT NULL,
+	"state" TEXT NULL,
+	"country" TEXT NULL
+) STRICT;
+
+CREATE TABLE "TeamsFranchises" (
+
+	"franchID" TEXT NOT NULL,
+	"franchName" TEXT NULL,
+	"active" TEXT NULL,
+	"NAassoc" TEXT NULL
+) STRICT;
+
+COMMIT;

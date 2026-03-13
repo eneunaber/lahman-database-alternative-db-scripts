@@ -4,21 +4,22 @@ This project contains scripts to build a SQLite version of the **Lahman** baseba
 
 ## Project Files
 
-- `sqlite/create_lahman_sqlite.sql`: Reset script that drops Lahman tables in a SQLite database file.
-- `sqlite/load_lahman_from_csv_sqlite.sql`: Load script using `sqlite3` `.import` commands.
+- `sqlite/create_lahman_sqlite.sql`: Reset/create script that rebuilds strict tables in a SQLite database file.
+- `sqlite/load_lahman_from_csv_sqlite.sql`: Wrapper load script that calls the Python staging loader.
+- `sqlite/load_lahman_from_csv_sqlite.py`: Strict-safe staging loader for CSV imports.
 - `sqlite/test/validate_lahman_csv_roundtrip.sh`: Round-trip validation script.
 - `data/*.csv`: Source CSV files (one file per table).
 
 ## Prerequisites
 
 - `sqlite3` CLI available on PATH.
-- `python3` available on PATH (used by validator normalization logic).
+- `python3` available on PATH (used by loader and validator logic).
 
 ## Quick Start
 
 Run from the repository root.
 
-1. Reset existing Lahman tables in SQLite database file:
+1. Create/reset strict schema:
 
 ```bash
 sqlite3 lahman.sqlite < sqlite/create_lahman_sqlite.sql
@@ -30,11 +31,16 @@ sqlite3 lahman.sqlite < sqlite/create_lahman_sqlite.sql
 sqlite3 lahman.sqlite < sqlite/load_lahman_from_csv_sqlite.sql
 ```
 
+This wrapper calls `sqlite/load_lahman_from_csv_sqlite.py`, so `python3` must be available when you run it.
+
 ## Notes
 
-- The load script uses SQLite shell dot-commands (`.import`), so run with the `sqlite3` CLI.
-- CSV header names become SQLite column names.
-- Imported columns default to SQLite TEXT affinity when tables are created via `.import`.
+- The create script contains committed `DROP TABLE` + `CREATE TABLE ... STRICT` statements.
+- SQLite types are mapped from SQL Server types (`INTEGER`, `REAL`, `TEXT`, `BLOB`) for stricter consistency than auto-created all-text tables.
+- The load wrapper calls a Python staging loader that:
+  - loads raw CSV rows into temp TEXT tables
+  - inserts into strict target tables using trim/NULL conversions
+  - avoids strict-type failures from blank numeric CSV values
 
 ## Validation
 
@@ -42,5 +48,7 @@ sqlite3 lahman.sqlite < sqlite/load_lahman_from_csv_sqlite.sql
 chmod +x sqlite/test/validate_lahman_csv_roundtrip.sh
 DB_PATH=lahman.sqlite ./sqlite/test/validate_lahman_csv_roundtrip.sh
 ```
+
+The validator normalizes exported SQLite values by declared column type before diffing. This avoids false mismatches such as `4` versus `4.0` in `REAL` columns.
 
 See `sqlite/test/README.md` for a fuller test flow.
