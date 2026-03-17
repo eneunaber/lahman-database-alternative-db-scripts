@@ -1,10 +1,9 @@
 # Lahman Database MySQL Scripts
 
-This project contains scripts and CSV data to build the **Lahman** baseball database in MySQL from the supplied Lahman CSV files.
+This project contains SQL scripts designed to create and populate a MySQL version of the [Lahman Baseball Database](https://sabr.org/lahman-database/) using CSV datasets provided by [SABR](https://sabr.org/lahman-database/).
 
 ## Project Files
 
-- `create_lahman_mssql_script.sql`: Original SQL Server schema script.
 - `mysql/create_lahman_mysql.sql`: MySQL-converted schema script.
 - `mysql/load_lahman_from_csv_mysql.sql`: Post-create data load script using `LOAD DATA LOCAL INFILE`.
 - `data/*.csv`: Source directory to place comma delimited files from https://sabr.org/lahman-database/ (one CSV per table).
@@ -40,21 +39,48 @@ mysql --local-infile=1 -h <server-name> -P 3306 -u <username> -p lahman < mysql/
 - Empty CSV values are converted to `NULL` where columns are nullable.
 - Some views rely on a compatibility `TRANSLATE(...)` function shim included in the schema script.
 
-## Validation
+## Testing & Validation
 
-Use the test harness in `mysql/test` to verify round-trip data fidelity.
+There is a Docker compose file provided to easily create a MariaDB database for testing. You can validate the PostgreSQL workflow with the Docker-based test harness in Use the test harness in `mysql/test`.
+
+### Prerequisites:
+
+- Docker + Docker Compose
+- python3 --version
+- Run commands from the repository root so `./data/*.csv` paths resolve
+
+### 1. Start a clean MySQL container:
 
 ```bash
-./mysql/test/validate_lahman_csv_roundtrip.sh
+# Copy Docker Compose to your remote host, from the location where the files are stored
+docker compose down -v --remove-orphans
+docker compose up -d
 ```
 
-Remote host example:
+### 2. Create schema:
 
 ```bash
+# Likely, You are connecting to the remote host from your machine
+mysql -h <server name> -P 3306 -u testuser -p < mysql/create_lahman_mysql.sql
+```
+
+### 3. Load data from `data/*.csv`:
+
+```bash
+mysql --local-infile=1 -h <server name> -P 3306 -u testuser -p lahman < mysql/load_lahman_from_csv_mysql.sql
+```
+
+### 4. Validate round-trip output:
+
+```bash
+chmod +x mysql/test/validate_lahman_csv_roundtrip.sh
 DB_HOST=<server name> DB_PORT=3306 ./mysql/test/validate_lahman_csv_roundtrip.sh
 ```
 
-See `mysql/test/README.md` for full Docker-based test workflow.
+### Notes:
+
+- The validator exports query results client-side and does not require MySQL `FILE` privilege.
+- The validator defaults `DB_HOST=localhost`, which may use a Unix socket on Linux/WSL. Set `DB_HOST=<server name>` to force TCP for remote hosts.
 
 ## Troubleshooting
 

@@ -1,6 +1,6 @@
 # Lahman Database SQLite Scripts
 
-This project contains scripts to build a SQLite version of the **Lahman** baseball dataset from CSV files under `data/`.
+This project contains SQL scripts designed to create and populate a SQLite version of the [Lahman Baseball Database](https://sabr.org/lahman-database/) using CSV datasets provided by [SABR](https://sabr.org/lahman-database/).
 
 ## Project Files
 
@@ -42,13 +42,25 @@ This wrapper calls `sqlite/load_lahman_from_csv_sqlite.py`, so `python3` must be
   - inserts into strict target tables using trim/NULL conversions
   - avoids strict-type failures from blank numeric CSV values
 
-## Validation
+## Testing & Validation
 
 ```bash
+#This assumes you are running the validation command within the same folder as the SQLite database
 chmod +x sqlite/test/validate_lahman_csv_roundtrip.sh
 DB_PATH=lahman.sqlite ./sqlite/test/validate_lahman_csv_roundtrip.sh
 ```
 
 The validator normalizes exported SQLite values by declared column type before diffing. This avoids false mismatches such as `4` versus `4.0` in `REAL` columns.
 
-See `sqlite/test/README.md` for a fuller test flow.
+### Notes:
+
+- The validation methodology is to ensure the data that went in, is exactly the same data that comes back out.
+- With the other databases a Docker compose file is provided to allow for local testing. SQLite is file-based, so no Docker database server is required and the script above is all that is needed to test.
+- `sqlite/load_lahman_from_csv_sqlite.sql` calls `sqlite/load_lahman_from_csv_sqlite.py`, so `python3` must be available.
+- The validator also requires `python3`.
+- Run commands from repository root so `./data/*.csv` paths resolve.
+
+## Attribution and License
+
+The underlying Lahman dataset is provided by SABR/Sean Lahman. Refer to them for the official copyright,
+license, and contact information.

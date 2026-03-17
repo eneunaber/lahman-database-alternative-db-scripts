@@ -1,11 +1,10 @@
 # Lahman Database MariaDB Scripts
 
-This project contains scripts and CSV data to build the **Lahman** baseball database in MariaDB from the supplied Lahman CSV files.
+This project contains SQL scripts designed to create and populate a MariaDB version of the [Lahman Baseball Database](https://sabr.org/lahman-database/) using CSV datasets provided by [SABR](https://sabr.org/lahman-database/).
 
 ## Project Files
 
-- `create_lahman_mssql_script.sql`: Original SQL Server schema script.
-- `mariadb/create_lahman_mariadb.sql`: MariaDB-converted schema script.
+- `mariadb/create_lahman_mariadb.sql`: Schema script for a MariaDB.
 - `mariadb/load_lahman_from_csv_mariadb.sql`: Post-create data load script using `LOAD DATA LOCAL INFILE`.
 - `data/*.csv`: Source directory to place comma delimited files from https://sabr.org/lahman-database/ (one CSV per table).
 - `mariadb/test/`: Docker Compose and validation scripts for round-trip testing.
@@ -40,21 +39,56 @@ mariadb --local-infile=1 -h <server-name> -P 3306 -u <username> -p lahman < mari
 - Empty CSV values are converted to `NULL` where columns are nullable.
 - Some views rely on a compatibility `TRANSLATE(...)` function shim included in the schema script.
 
-## Validation
+## Testing & Validation
 
-Use the test harness in `mariadb/test` to verify round-trip data fidelity.
+There is a Docker compose file provided to easily create a MariaDB database for testing. You can validate the PostgreSQL workflow with the Docker-based test harness in Use the test harness in `mariadb/test`.
+
+### Prerequisites:
+
+- Docker + Docker Compose
+- python3 --version
+- Run commands from the repository root so `./data/*.csv` paths resolve
+
+#### 1. Start With a Clean Database
+
+Files located in `mariadb/test`:
 
 ```bash
-./mariadb/test/validate_lahman_csv_roundtrip.sh
+# Copy Docker Compose to your remote host, from the location where the files are stored
+docker compose down -v --remove-orphans
+docker compose up -d
 ```
 
-Remote host example:
+### 2. Create schema
+
+From repository root:
 
 ```bash
-DB_HOST=<server name> DB_PORT=3306 ./mariadb/test/validate_lahman_csv_roundtrip.sh
+# Likely, You are connecting to the remote host from your machine
+mariadb -h <server-name> -P 3306 -u testuser -p lahman < create_lahman_mariadb.sql
 ```
 
-See `mariadb/test/README.md` for full Docker-based test workflow.
+### 3. Load data from `data/*.csv`
+
+From repository root:
+
+```bash
+mariadb --local-infile=1 -h <server-name> -P 3306 -u testuser -p lahman < load_lahman_from_csv_mariadb.sql
+```
+
+### 4. Validate round-trip output
+
+From repository root:
+
+```bash
+chmod +x mariadb/test/validate_lahman_csv_roundtrip.sh
+DB_HOST=<server name> DB_PORT=3306 ./mariadb/**test**/validate_lahman_csv_roundtrip.sh
+```
+
+### Notes:
+
+- The validator exports query results client-side and does not require MariaDB `FILE` privilege.
+- For remote Docker hosts, set `DB_HOST` explicitly.
 
 ## Troubleshooting
 
