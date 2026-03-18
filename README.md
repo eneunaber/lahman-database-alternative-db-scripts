@@ -21,6 +21,9 @@ The final step was to rework some parts of the README files and call version one
 - [MySQL](./mysql/README.md)
 - [SQLite](./sqlite/README.md)
 
+## Version
+- 2025.1.0.0 - Initial release that matches Lahman Baseball Database Version 2025, released January 2, 2026
+
 ## Project Structure
 
 - `create_lahman_mssql_script.sql`: original SQL Server source script used as the baseline for conversions
