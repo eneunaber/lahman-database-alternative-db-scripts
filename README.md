@@ -1,4 +1,4 @@
-# Lahman Database Alternate Database Scripts
+# Lahman Database Alternative Database Scripts
 
 This repository contains scripts for creating and loading data provided by the [Lahman Baseball Database](https://sabr.org/lahman-database/) into multiple alternative database engines.
 
